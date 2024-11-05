@@ -1,3 +1,4 @@
+#pragma once
 
 #include <concepts>
 #include <cstddef>
@@ -54,8 +55,24 @@ public:
     return *this;
   }
 
-  void swap(UniquePtr &__that) noexcept { std::swap(_M_p, __that._M_p); }
+  // 辅助函数
+  _Tp *get() const noexcept { return _M_p; }
 
+  void swap(UniquePtr &__that) noexcept { std::swap(_M_p, __that._M_p); }
+  _Tp *release() noexcept {
+    _Tp *__p = _M_p;
+    _M_p = nullptr;
+    return __p;
+  }
+
+  void reset(_Tp *__p = nullptr) noexcept {
+    if (_M_p) {
+      _M_deleter(_M_p);
+    }
+    _M_p = __p;
+  }
+
+  // 运算符
   explicit operator bool() const noexcept { return _M_p != nullptr; }
 
   bool operator==(UniquePtr const &__that) const noexcept {
@@ -89,4 +106,18 @@ UniquePtr<_Tp> makeUnique(_Args &&...__args) {
   return UniquePtr<_Tp>(new _Tp(std::forward<_Args>(__args)...));
 }
 
-int main() { auto a = makeUnique<int>(2); }
+template <class _Tp, std::enable_if_t<!std::is_unbounded_array_v<_Tp>, int> = 0>
+UniquePtr<_Tp> makeUniqueForOverwrite() {
+  return UniquePtr<_Tp>(new _Tp);
+}
+
+template <class _Tp, class... _Args,
+          std::enable_if_t<std::is_unbounded_array_v<_Tp>, int> = 0>
+UniquePtr<_Tp> makeUnique(std::size_t __len) {
+  return UniquePtr<_Tp>(new std::remove_extent_t<_Tp>[__len]());
+}
+
+template <class _Tp, std::enable_if_t<std::is_unbounded_array_v<_Tp>, int> = 0>
+UniquePtr<_Tp> makeUniqueForOverwrite(std::size_t __len) {
+  return UniquePtr<_Tp>(new std::remove_extent_t<_Tp>[__len]);
+}
