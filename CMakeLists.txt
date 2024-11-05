@@ -25,10 +25,10 @@ include_directories(${GMOCK_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
 link_directories(${GMOCK_LIBRARY_DIRS} ${GTEST_LIBRARY_DIRS})
 
 # 查找所有测试源文件
-file(GLOB sources CONFIGURE_DEPENDS ./test/*.cpp)
+file(GLOB test_sources CONFIGURE_DEPENDS ./test/*.cpp)
 
 # 为每个源文件创建测试目标并链接库
-foreach(source IN ITEMS ${sources})
+foreach(source IN ITEMS ${test_sources})
     get_filename_component(name "${source}" NAME_WLE)
     add_executable(${name}_test ${source})
 
@@ -38,3 +38,10 @@ foreach(source IN ITEMS ${sources})
 endforeach()
 
 enable_testing()
+
+
+file(GLOB sources CONFIGURE_DEPENDS *.cpp)
+foreach (source IN ITEMS ${sources})
+    get_filename_component(name "${source}" NAME_WLE)
+    add_executable(${name} ${name}.cpp)
+endforeach()
