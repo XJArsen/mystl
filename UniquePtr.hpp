@@ -15,6 +15,8 @@ private:
   _Tp *_M_p;
   _Deleter _M_deleter;
 
+  template <class _Up, class _UDeleter> friend struct UniquePtr;
+
 public:
   using element_type = _Tp;
   using pointer = _Tp *;
@@ -73,6 +75,8 @@ public:
   }
 
   // 运算符
+  _Tp *operator->() const noexcept { return _M_p; }
+  
   explicit operator bool() const noexcept { return _M_p != nullptr; }
 
   bool operator==(UniquePtr const &__that) const noexcept {

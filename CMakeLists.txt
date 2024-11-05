@@ -9,7 +9,14 @@ set(CMAKE_CXX_STANDARD 20)
 project(mystl LANGUAGES CXX)
 
 add_compile_options(-Wall -Wextra -Werror=return-type)
-# 添加gtest gmock
+
+# 查找根目录下的所有 .hpp 文件
+file(GLOB HEADER_FILES ${CMAKE_SOURCE_DIR}/*.hpp)
+
+# 添加包含路径
+include_directories(${CMAKE_SOURCE_DIR} ${HEADER_FILES})
+
+# 添加 gtest 和 gmock
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GMOCK REQUIRED gmock)
 pkg_check_modules(GTEST REQUIRED gtest)
@@ -17,7 +24,8 @@ pkg_check_modules(GTEST REQUIRED gtest)
 include_directories(${GMOCK_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
 link_directories(${GMOCK_LIBRARY_DIRS} ${GTEST_LIBRARY_DIRS})
 
-file(GLOB sources CONFIGURE_DEPENDS *.cpp)
+# 查找所有测试源文件
+file(GLOB sources CONFIGURE_DEPENDS ./test/*.cpp)
 
 # 为每个源文件创建测试目标并链接库
 foreach(source IN ITEMS ${sources})
