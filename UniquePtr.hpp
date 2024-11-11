@@ -139,18 +139,20 @@ UniquePtr<_Tp> makeUnique(_Args &&...__args) {
     return UniquePtr<_Tp>(new _Tp(std::forward<_Args>(__args)...));
 }
 
-template <class _Tp, std::enable_if_t<!std::is_unbounded_array_v<_Tp>, int> = 0>
+template <class _Tp>
+    requires(!std::is_unbounded_array_v<_Tp>)
 UniquePtr<_Tp> makeUniqueForOverwrite() {
     return UniquePtr<_Tp>(new _Tp);
 }
 
-template <class _Tp, class... _Args,
-          std::enable_if_t<std::is_unbounded_array_v<_Tp>, int> = 0>
+template <class _Tp, class... _Args>
+    requires std::is_unbounded_array_v<_Tp>
 UniquePtr<_Tp> makeUnique(std::size_t __len) {
     return UniquePtr<_Tp>(new std::remove_extent_t<_Tp>[__len]());
 }
 
-template <class _Tp, std::enable_if_t<std::is_unbounded_array_v<_Tp>, int> = 0>
+template <class _Tp>
+    requires(std::is_unbounded_array_v<_Tp>)
 UniquePtr<_Tp> makeUniqueForOverwrite(std::size_t __len) {
     return UniquePtr<_Tp>(new std::remove_extent_t<_Tp>[__len]);
 }
