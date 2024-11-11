@@ -22,7 +22,7 @@ template <class _Tp, class _Deleter = DefaultDeleter<_Tp>>
 struct UniquePtr {
 private:
     _Tp *_M_p;
-    _Deleter _M_deleter;
+    [[no_unique_address]] _Deleter _M_deleter;
 
     template <class _Up, class _UDeleter>
     friend struct UniquePtr;
@@ -124,8 +124,17 @@ public:
     }
 };
 
-template <class _Tp, class... _Args,
-          std::enable_if_t<!std::is_unbounded_array_v<_Tp>, int> = 0>
+template <class _Tp, class _Deleter>
+struct UniquePtr<_Tp[], _Deleter> : UniquePtr<_Tp, _Deleter> {
+    using UniquePtr<_Tp, _Deleter>::UniquePtr;
+
+    std::add_lvalue_reference_t<_Tp> operator[](std::size_t __i) {
+        return this->get()[__i];
+    }
+};
+
+template <class _Tp, class... _Args>
+    requires(!std::is_unbounded_array_v<_Tp>)
 UniquePtr<_Tp> makeUnique(_Args &&...__args) {
     return UniquePtr<_Tp>(new _Tp(std::forward<_Args>(__args)...));
 }
